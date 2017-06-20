@@ -2,17 +2,17 @@ __version__ = "0.8.1"
 
 
 TYPE = {
-    0:  'bios',
-    1:  'system',
-    2:  'base board',
-    3:  'chassis',
-    4:  'processor',
-    7:  'cache',
-    8:  'port connector',
-    9:  'system slot',
+    0: 'bios',
+    1: 'system',
+    2: 'base board',
+    3: 'chassis',
+    4: 'processor',
+    7: 'cache',
+    8: 'port connector',
+    9: 'system slot',
     10: 'on board device',
     11: 'OEM strings',
-    #13: 'bios language',
+    # 13: 'bios language',
     15: 'system event log',
     16: 'physical memory array',
     17: 'memory_device',
@@ -22,7 +22,7 @@ TYPE = {
     27: 'cooling device',
     32: 'system boot',
     41: 'onboard device',
-    }
+}
 
 
 try:
@@ -64,7 +64,7 @@ def _parse_handle_section(lines):
     """
     data = {
         '_title': next(lines).rstrip(),
-        }
+    }
 
     for line in lines:
         line = line.rstrip()
