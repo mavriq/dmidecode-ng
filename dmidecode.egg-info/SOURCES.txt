@@ -1,0 +1,6 @@
+dmidecode.py
+setup.py
+dmidecode.egg-info/PKG-INFO
+dmidecode.egg-info/SOURCES.txt
+dmidecode.egg-info/dependency_links.txt
+dmidecode.egg-info/top_level.txt
