@@ -16,7 +16,7 @@ TYPE = {
     9: 'system slot',
     10: 'on board device',
     11: 'OEM strings',
-    # 13: 'bios language',
+    13: 'bios language',
     15: 'system event log',
     16: 'physical memory array',
     17: 'memory_device',
@@ -70,9 +70,12 @@ def _parse_handle_section(lines):
         '_title': next(lines).rstrip(),
     }
 
+    k = None
     for line in lines:
         line = line.rstrip()
         if line.startswith('\t\t'):
+            if not isinstance(data.get(k), list):
+                data[k] = [data.get(k)]
             data[k].append(line.lstrip())
         elif line.startswith('\t'):
             k, v = [i.strip() for i in line.lstrip().split(':', 1)]
