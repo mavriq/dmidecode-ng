@@ -25,6 +25,14 @@ TYPE = {
     }
 
 
+try:
+    next.__doc__
+except NameError:
+    # need for python-2.4
+    def next(iterator):
+        return iterator.next()
+
+
 def parse_dmi(content):
     """
     Parse the whole dmidecode output.
@@ -34,7 +42,7 @@ def parse_dmi(content):
     lines = iter(content.strip().splitlines())
     while True:
         try:
-            line = lines.next()
+            line = next(lines)
         except StopIteration:
             break
 
@@ -55,7 +63,7 @@ def _parse_handle_section(lines):
     * line started with two tabs is a member of list
     """
     data = {
-        '_title': lines.next().rstrip(),
+        '_title': next(lines).rstrip(),
         }
 
     for line in lines:
@@ -86,11 +94,38 @@ def profile():
 
 
 def _get_output():
-    import subprocess
-    output = subprocess.check_output(
-        'PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin '
-        'sudo dmidecode', shell=True)
-    return output
+    import os
+    from subprocess import Popen, PIPE
+    try:
+        from subprocess import DEVNULL
+    except ImportError:
+        DEVNULL = open('/dev/null', 'w')
+    cmdline = 'sudo dmidecode'
+    _env = os.environ.copy()
+    _env['LC_ALL'] = 'C'
+    _env['LANG'] = 'C'
+    _env['PATH'] = ':'.join((
+        os.environ.get('PATH', ''),
+        '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin',
+    ))
+    _cmd = Popen(
+        cmdline,
+        stdin=DEVNULL,
+        stdout=PIPE,
+        stderr=PIPE,
+        shell=True,
+        env=_env,
+    )
+    _x = _cmd.communicate()
+    if _cmd.returncode != 0:
+        raise OSError({
+            'command': cmdline,
+            'returncode': _cmd.returncode,
+            'stdout': _x[0],
+            'stderr': _x[1],
+        })
+    else:
+        return _x[0].decode()
 
 
 def _show(info):
@@ -98,21 +133,21 @@ def _show(info):
         return [v for j, v in info if j == i]
 
     system = _get(1)[0]
-    print '%s %s (SN: %s, UUID: %s)' % (
-        system['Manufacturer'],
-        system['Product Name'],
-        system['Serial Number'],
-        system['UUID'],
-        )
+    print('%s %s (SN: %s, UUID: %s)' % (
+        system.get('Manufacturer', '-n/a-'),
+        system.get('Product Name', '-n/a-'),
+        system.get('Serial Number', '-n/a-'),
+        system.get('UUID', '-n/a-'),
+    ))
 
     for cpu in _get(4):
-        print '%s %s %s (Core: %s, Thead: %s)' % (
-            cpu['Manufacturer'],
-            cpu['Family'],
-            cpu['Max Speed'],
-            cpu['Core Count'],
-            cpu['Thread Count'],
-            )
+        print('%s %s %s (Core: %s, Thead: %s)' % (
+            cpu.get('Manufacturer', '-n/a-'),
+            cpu.get('Family', '-n/a-'),
+            cpu.get('Max Speed', '-n/a-'),
+            cpu.get('Core Count', '-n/a-'),
+            cpu.get('Thread Count', '-n/a-'),
+        ))
 
     cnt, total, unit = 0, 0, None
     for mem in _get(17):
@@ -121,11 +156,11 @@ def _show(info):
         i, unit = mem['Size'].split()
         cnt += 1
         total += int(i)
-    print '%d memory stick(s), %d %s in total' % (
+    print('%d memory stick(s), %d %s in total' % (
         cnt,
         total,
         unit,
-        )
+    ))
 
 
 if __name__ == '__main__':
