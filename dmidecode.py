@@ -2,8 +2,8 @@
 import os
 import sys
 
-
-__version__ = "0.8.1"
+VERSION = (0, 8, 2)
+__version__ = '.'.join((str(x) for x in VERSION))
 
 TYPE = {
     0: 'bios',
